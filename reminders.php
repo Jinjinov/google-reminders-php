@@ -1,7 +1,4 @@
 <?php
-
-namespace Jinjinov\GoogleReminders;
-
 class Reminder {
     function __construct($id,$title,$dt,$creation_timestamp_msec = null,$done = false) {
         if ($id == null) {

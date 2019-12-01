@@ -2,9 +2,9 @@
 
 Google Reminders PHP API is a port of https://github.com/jonahar/google-reminders-cli python API to php
 
-To run this code you need a `client_secret.json` file with authorization credentials.
+To run this code you need the auto-generated `client_secret.json` file with authorization credentials from the Google API Console.
 
-For more, see:
+For instructions on how to generate it, see:
 
 https://developers.google.com/identity/protocols/OAuth2WebServer
 

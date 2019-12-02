@@ -4,9 +4,7 @@
   </head>
   <body>
     <?php
-    require_once __DIR__.'/vendor/autoload.php';
-
-    require 'reminders.php';
+    use Jinjinov\GoogleReminders\Reminder;
 
     session_start();
 

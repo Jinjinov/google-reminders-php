@@ -13,3 +13,9 @@ You also need the Google APIs Client Library for PHP.
 You can get it from here:
 
 https://github.com/googleapis/google-api-php-client
+
+---
+
+Related projects:
+- Python original: https://github.com/jonahar/google-reminders-cli
+- JavaScript port: https://github.com/Jinjinov/google-reminders-js

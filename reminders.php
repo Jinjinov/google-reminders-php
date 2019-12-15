@@ -1,4 +1,5 @@
 <?php
+
 class Reminder {
     function __construct($id,$title,$dt,$creation_timestamp_msec = null,$done = false) {
         if ($id == null) {
@@ -10,7 +11,23 @@ class Reminder {
         $this->creation_timestamp_msec = $creation_timestamp_msec;
         $this->done = $done;
     }
+
+    public function __toString()
+    {
+        if($this->done)
+        {
+            return "{$this->dt->format("Y.m.d")} {$this->title} [Done]";
+        }
+        else
+        {
+            return "{$this->dt->format("Y.m.d")} {$this->title}";
+        }
+    }
 }
+
+// https://github.com/googleapis/google-api-php-client
+
+// https://developers.google.com/identity/protocols/OAuth2WebServer
 
 function create_reminder_request_body($reminder) {
     $body = (object)[
@@ -67,7 +84,7 @@ function list_reminder_request_body($num_reminders, $max_timestamp_msec = 0) {
     ];
     
     if ($max_timestamp_msec) {
-        $max_timestamp_msec += int(15 * 3600 * 1000);
+        $max_timestamp_msec += (int)(15 * 3600 * 1000);
         $body['16'] = $max_timestamp_msec;
         /*
         Empirically, when requesting with a certain timestamp, reminders with the given timestamp 
@@ -86,19 +103,30 @@ function build_reminder($reminder_dict) {
     try {
         $id = $r['1']['2'];
         $title = $r['3'];
+
         $year = $r['5']['1'];
         $month = $r['5']['2'];
         $day = $r['5']['3'];
-        $hour = $r['5']['4']['1'];
-        $minute = $r['5']['4']['2'];
-        $second = $r['5']['4']['3'];
-        $creation_timestamp_msec = int($r['18']);
+
+        $date_time = new DateTime();
+        $date_time->setDate($year, $month, $day);
+
+        if(array_key_exists('4', $r['5']))
+        {
+            $hour = $r['5']['4']['1'];
+            $minute = $r['5']['4']['2'];
+            $second = $r['5']['4']['3'];
+
+            $date_time->setTime($hour, $minute, $second);
+        }
+
+        $creation_timestamp_msec = (int)($r['18']);
         $done = array_key_exists('8', $r) && $r['8'] == 1;
-        
+
         return new Reminder(
             $id,
             $title,
-            DateTime($year, $month, $day, $hour, $minute, $second),
+            $date_time,
             $creation_timestamp_msec,
             $done
         );
@@ -119,7 +147,7 @@ function create_reminder($httpClient, $reminder) {
         'POST',
         'https://reminders-pa.clients6.google.com/v1internalOP/reminders/create',
         [
-            'headers' => [ 'content-type' => 'application/json' ],
+            'headers' => [ 'content-type' => 'application/json+protobuf' ],
             'body' => create_reminder_request_body($reminder),
         ]
     );
@@ -142,7 +170,7 @@ function get_reminder($httpClient, $reminder_id) {
         'POST',
         'https://reminders-pa.clients6.google.com/v1internalOP/reminders/get',
         [
-            'headers' => [ 'content-type' => 'application/json' ],
+            'headers' => [ 'content-type' => 'application/json+protobuf' ],
             'body' => get_reminder_request_body($reminder_id)
         ]
     );
@@ -150,7 +178,7 @@ function get_reminder($httpClient, $reminder_id) {
     if ($response->getStatusCode() == 200) {
 
         $content = $response->getBody();
-        $content_dict = json_decode($content);
+        $content_dict = json_decode($content, true);
 
         if (!isset($content_dict) || empty($content_dict)) {
             echo("Couldn\'t find reminder with id=${reminder_id}");
@@ -175,7 +203,7 @@ function delete_reminder($httpClient, $reminder_id) {
         'POST',
         'https://reminders-pa.clients6.google.com/v1internalOP/reminders/delete',
         [
-            'headers' => [ 'content-type' => 'application/json' ],
+            'headers' => [ 'content-type' => 'application/json+protobuf' ],
             'body' => delete_reminder_request_body($reminder_id)
         ]
     );
@@ -198,7 +226,7 @@ function list_reminders($httpClient, $num_reminders) {
         'POST',
         'https://reminders-pa.clients6.google.com/v1internalOP/reminders/list',
         [
-            'headers' => [ 'content-type' => 'application/json' ],
+            'headers' => [ 'content-type' => 'application/json+protobuf' ],
             'body' => list_reminder_request_body($num_reminders)
         ]
     );
@@ -206,7 +234,7 @@ function list_reminders($httpClient, $num_reminders) {
     if ($response->getStatusCode() == 200) {
 
         $content = $response->getBody();
-        $content_dict = json_decode($content);
+        $content_dict = json_decode($content, true);
 
         if (!array_key_exists('1', $content_dict)) {
             return [];

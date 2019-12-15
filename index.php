@@ -26,7 +26,9 @@
       $reminders = list_reminders($httpClient, 10);
 
       foreach($reminders as $reminder) {
+        echo '<p>';
         echo $reminder;
+        echo '</p>';
       }
     }
     else {
